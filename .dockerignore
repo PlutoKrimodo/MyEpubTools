@@ -1,0 +1,27 @@
+# 不把虚拟环境、运行时产物与版本库信息打进镜像。
+# 注意：.gitignore 对 docker build 无效，必须在这里显式排除。
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.git/
+.gitignore
+.gitattributes
+.codebuddy/
+.Trash-0/
+uploads/
+outputs/
+work/
+.build_*/
+*.md
+
+# 构建与 CI 自身的文件不需要进镜像
+Dockerfile
+.dockerignore
+.cnb.yml
+.cnb/
+
+# 以下必须保留，不要加进上面的列表：
+# app.py、build_epub.py、requirements.txt、sample_test.epub、
+# modules/、templates/、static/、web/

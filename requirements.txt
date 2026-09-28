@@ -1,0 +1,4 @@
+Flask>=2.2,<4
+beautifulsoup4
+# 简繁转换引擎。纯预编译 wheel（约 2.3MB），自带词典，无系统依赖、无传递依赖。
+opencc

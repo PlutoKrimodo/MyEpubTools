@@ -1,0 +1,407 @@
+/* 通用工具页面框架样式。
+   视觉令牌与 static/home/home.css 保持一致，两边改动请同步。
+   本文件只改「观感」，不改变任何由 toolkit.js / 各工具页面依赖的类名与结构。 */
+*{box-sizing:border-box}
+
+:root{
+    /* 基础色 */
+    --tk-bg:#f4f6f9;
+    --tk-card:#ffffff;
+    --tk-card-soft:#f8fafc;
+    --tk-border:#e6e9ef;
+    --tk-border-strong:#cfd6e0;
+
+    /* 文本 */
+    --tk-text:#1b2027;
+    --tk-text-muted:#5f6b7a;
+    --tk-text-faint:#8894a3;
+
+    /* 品牌 / 强调 */
+    --tk-primary:#20242a;
+    --tk-primary-hover:#343b45;
+    --tk-accent:#3b6cf6;
+    --tk-accent-soft:rgba(59,108,246,.08);
+    --tk-accent-ring:rgba(59,108,246,.22);
+
+    /* 语义色 */
+    --tk-ok-bg:#ecf8f0;
+    --tk-ok-fg:#1f7a45;
+    --tk-err-bg:#fdf0f0;
+    --tk-err-fg:#b3261e;
+
+    /* 形状 */
+    --tk-radius:16px;
+    --tk-radius-sm:10px;
+    --tk-radius-xs:8px;
+
+    /* 阴影：分三级，越靠近用户的操作层级越高 */
+    --tk-shadow-sm:0 1px 2px rgba(16,24,40,.04),0 1px 3px rgba(16,24,40,.05);
+    --tk-shadow-md:0 6px 18px rgba(16,24,40,.07);
+    --tk-shadow-lg:0 16px 40px rgba(16,24,40,.12);
+
+    /* 动效曲线 */
+    --tk-ease:cubic-bezier(.2,.7,.3,1);
+}
+
+html{scroll-behavior:smooth}
+
+body{
+    margin:0;
+    background-color:var(--tk-bg);
+    /* 顶部一层极淡的白色渐隐，避免整页纯色发闷 */
+    background-image:radial-gradient(120% 55% at 50% 0,#ffffff 0%,rgba(255,255,255,0) 62%);
+    background-repeat:no-repeat;
+    color:var(--tk-text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    font-size:15px;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+}
+
+.tk-page{max-width:1080px;margin:0 auto;padding:40px 24px 72px}
+
+/* ---------------- 页头 ---------------- */
+.tk-header{margin-bottom:28px;padding-bottom:20px;border-bottom:1px solid var(--tk-border)}
+.tk-header h1{
+    font-size:29px;
+    line-height:1.24;
+    margin:0 0 9px;
+    font-weight:700;
+    letter-spacing:-.01em;
+}
+.tk-subtitle{color:var(--tk-text-muted);margin:0;font-size:14.5px;line-height:1.6}
+
+/* ---------------- 卡片 ---------------- */
+.tk-card{
+    position:relative;
+    background:var(--tk-card);
+    border:1px solid var(--tk-border);
+    border-radius:var(--tk-radius);
+    padding:24px;
+    box-shadow:var(--tk-shadow-sm);
+    margin:14px 0;
+    transition:box-shadow .25s var(--tk-ease),border-color .25s var(--tk-ease);
+}
+.tk-card:hover{box-shadow:var(--tk-shadow-md);border-color:#dde3ec}
+.tk-card h2{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-size:16px;
+    margin:0 0 18px;
+    font-weight:650;
+    letter-spacing:-.005em;
+}
+/* 标题前的强调点：让每张卡片有统一的视觉锚点 */
+.tk-card h2::before{
+    content:"";
+    flex:none;
+    width:7px;
+    height:7px;
+    border-radius:999px;
+    background:var(--tk-accent);
+    box-shadow:0 0 0 4px var(--tk-accent-soft);
+}
+
+/* ---------------- 模式切换（分段控件） ---------------- */
+.tk-mode{
+    display:flex;
+    gap:6px;
+    padding:5px;
+    background:var(--tk-card-soft);
+    border:1px solid var(--tk-border);
+    border-radius:var(--tk-radius-sm);
+}
+.tk-mode button{
+    flex:1;
+    padding:10px 14px;
+    border:0;
+    background:transparent;
+    border-radius:var(--tk-radius-xs);
+    cursor:pointer;
+    font:inherit;
+    font-size:14px;
+    font-weight:600;
+    color:var(--tk-text-muted);
+    transition:background .18s var(--tk-ease),color .18s var(--tk-ease),box-shadow .18s var(--tk-ease);
+}
+.tk-mode button:hover:not(.tk-active){color:var(--tk-text);background:rgba(16,24,40,.045)}
+.tk-mode button.tk-active{
+    background:var(--tk-card);
+    color:var(--tk-text);
+    box-shadow:var(--tk-shadow-sm);
+}
+
+/* ---------------- 表单 ---------------- */
+label{display:block;font-size:13.5px;font-weight:600;margin:0 0 8px;color:var(--tk-text)}
+
+input[type="text"],input[type="number"],select,textarea{
+    width:100%;
+    border:1px solid var(--tk-border-strong);
+    border-radius:var(--tk-radius-sm);
+    padding:11px 13px;
+    background:#fff;
+    color:var(--tk-text);
+    font:inherit;
+    font-size:14px;
+    transition:border-color .18s var(--tk-ease),box-shadow .18s var(--tk-ease);
+}
+input[type="text"]:hover,input[type="number"]:hover,select:hover,textarea:hover{border-color:#b7c1cf}
+textarea{resize:vertical;line-height:1.65;min-height:96px}
+input[type="text"]:focus,input[type="number"]:focus,select:focus,textarea:focus{
+    outline:none;
+    border-color:var(--tk-accent);
+    box-shadow:0 0 0 4px var(--tk-accent-ring);
+}
+::placeholder{color:#9aa5b1}
+
+/* 独立出现的文件输入（非主上传区，如工具自带的 file 字段） */
+input[type="file"]{
+    width:100%;
+    border:1.5px dashed var(--tk-border-strong);
+    border-radius:var(--tk-radius-sm);
+    padding:10px 12px;
+    background:var(--tk-card-soft);
+    color:var(--tk-text-muted);
+    font:inherit;
+    font-size:13.5px;
+    transition:border-color .18s var(--tk-ease),background .18s var(--tk-ease);
+}
+input[type="file"]:hover{border-color:var(--tk-accent);background:var(--tk-accent-soft)}
+
+/* 主流浏览器的「选择文件」按钮 */
+input[type="file"]::file-selector-button{
+    margin-right:12px;
+    padding:8px 15px;
+    border:1px solid var(--tk-border-strong);
+    border-radius:var(--tk-radius-xs);
+    background:#fff;
+    color:var(--tk-text);
+    font:inherit;
+    font-size:13.5px;
+    font-weight:600;
+    cursor:pointer;
+    transition:background .18s var(--tk-ease),color .18s var(--tk-ease),border-color .18s var(--tk-ease);
+}
+input[type="file"]:hover::file-selector-button{background:var(--tk-primary);color:#fff;border-color:var(--tk-primary)}
+
+/* 主上传区：page.html 用 .tk-drop 包住 #tkFile */
+.tk-drop{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    padding:16px 18px;
+    border:1.5px dashed var(--tk-border-strong);
+    border-radius:var(--tk-radius-sm);
+    background:var(--tk-card-soft);
+    transition:border-color .2s var(--tk-ease),background .2s var(--tk-ease);
+}
+.tk-drop:hover,.tk-drop:focus-within{border-color:var(--tk-accent);background:var(--tk-accent-soft)}
+/* 上传图标：内联 SVG，不依赖任何外部资源 */
+.tk-drop::before{
+    content:"";
+    flex:none;
+    width:40px;
+    height:40px;
+    border-radius:11px;
+    background:#fff no-repeat center/20px 20px
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235f6b7a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 15V3'/%3E%3Cpath d='m7 8 5-5 5 5'/%3E%3Cpath d='M20 21H4'/%3E%3C/svg%3E");
+    box-shadow:var(--tk-shadow-sm);
+}
+.tk-drop input[type="file"]{
+    flex:1;
+    min-width:0;
+    border:0;
+    background:transparent;
+    padding:0;
+}
+.tk-drop input[type="file"]:hover{background:transparent}
+.tk-drop input[type="file"]:focus{box-shadow:none;border:0}
+
+.tk-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.tk-field.tk-span-2{grid-column:1/-1}
+.tk-field label{margin-bottom:7px}
+.tk-field .tk-hint{margin-top:7px}
+
+.tk-checkbox{display:flex;align-items:center;gap:9px;margin-top:4px}
+.tk-checkbox label{margin:0;font-weight:400;cursor:pointer}
+.tk-checkbox input[type="checkbox"]{
+    width:17px;
+    height:17px;
+    margin:0;
+    flex:none;
+    cursor:pointer;
+    accent-color:var(--tk-primary);
+}
+
+/* ---------------- 操作按钮 ---------------- */
+.tk-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
+button{font:inherit}
+.tk-primary{
+    border:0;
+    background:var(--tk-primary);
+    color:#fff;
+    padding:11px 20px;
+    border-radius:var(--tk-radius-sm);
+    cursor:pointer;
+    font-size:14px;
+    font-weight:650;
+    box-shadow:0 1px 2px rgba(16,24,40,.14);
+    transition:background .18s var(--tk-ease),box-shadow .18s var(--tk-ease),transform .12s var(--tk-ease);
+}
+.tk-primary:hover:not(:disabled){background:var(--tk-primary-hover);box-shadow:0 8px 20px rgba(16,24,40,.18)}
+.tk-primary:active:not(:disabled){transform:translateY(1px);box-shadow:0 1px 2px rgba(16,24,40,.14)}
+.tk-primary:focus-visible{outline:none;box-shadow:0 0 0 4px var(--tk-accent-ring)}
+.tk-primary:disabled{opacity:.5;cursor:not-allowed;box-shadow:none}
+.tk-secondary{
+    border:1px solid var(--tk-border-strong);
+    background:#fff;
+    color:var(--tk-text);
+    padding:11px 20px;
+    border-radius:var(--tk-radius-sm);
+    cursor:pointer;
+    font-size:14px;
+    font-weight:600;
+    transition:background .18s var(--tk-ease),border-color .18s var(--tk-ease),color .18s var(--tk-ease);
+}
+.tk-secondary:hover:not(:disabled){background:var(--tk-card-soft);border-color:#9fabbb}
+.tk-secondary:focus-visible{outline:none;border-color:var(--tk-accent);box-shadow:0 0 0 4px var(--tk-accent-ring)}
+.tk-secondary:disabled{opacity:.5;cursor:not-allowed}
+
+.tk-hint{font-size:12.5px;color:var(--tk-text-faint);margin-top:8px;line-height:1.6}
+.tk-hidden{display:none!important}
+
+/* 跨板块共享的「当前书籍」提示条 */
+.tk-memory{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin:12px 0 0;
+    padding:11px 13px;
+    border:1px solid var(--tk-border);
+    border-radius:var(--tk-radius-sm);
+    background:var(--tk-card-soft);
+    font-size:12.5px;
+    color:var(--tk-text-muted);
+}
+.tk-memory-text{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* 多文件上传时的顺序列表 */
+.tk-order{margin-top:12px;border:1px solid var(--tk-border);border-radius:var(--tk-radius-sm);background:var(--tk-card-soft);padding:12px 14px}
+.tk-order-head{font-size:12px;color:var(--tk-text-faint);margin:0 0 8px}
+.tk-order-item{display:flex;align-items:center;gap:8px;padding:6px 0;font-size:13px}
+.tk-order-item + .tk-order-item{border-top:1px solid var(--tk-border)}
+.tk-order-index{flex:none;width:20px;color:var(--tk-text-faint);font-variant-numeric:tabular-nums}
+.tk-order-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tk-order-btn{
+    flex:none;
+    width:28px;
+    height:26px;
+    padding:0;
+    line-height:1;
+    font-size:12px;
+    border:1px solid var(--tk-border-strong);
+    background:#fff;
+    border-radius:7px;
+    cursor:pointer;
+    transition:background .15s var(--tk-ease),border-color .15s var(--tk-ease);
+}
+.tk-order-btn:hover:not(:disabled){background:var(--tk-primary);color:#fff;border-color:var(--tk-primary)}
+.tk-order-btn:disabled{opacity:.32;cursor:not-allowed}
+
+/* 可勾选的文件列表（由预填数据生成） */
+.tk-filelist{border:1px solid var(--tk-border);border-radius:var(--tk-radius-sm);background:#fff;overflow:hidden}
+.tk-filelist-tools{display:flex;align-items:center;gap:8px;padding:9px 12px;border-bottom:1px solid var(--tk-border);background:var(--tk-card-soft)}
+.tk-filelist-count{margin-left:auto;font-size:12px;color:var(--tk-text-faint)}
+.tk-filelist-items{max-height:300px;overflow:auto}
+.tk-filelist-row{display:flex;align-items:center;gap:9px;padding:8px 12px;font-size:13px;cursor:pointer;margin:0;font-weight:400;transition:background .15s var(--tk-ease)}
+.tk-filelist-row + .tk-filelist-row{border-top:1px solid #f1f4f8}
+.tk-filelist-row:hover{background:var(--tk-card-soft)}
+.tk-filelist-row input{width:15px;height:15px;flex:none;margin:0;cursor:pointer;accent-color:var(--tk-primary)}
+.tk-filelist-label{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tk-filelist-path{flex:none;max-width:45%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:Consolas,monospace;font-size:11px;color:var(--tk-text-faint)}
+.tk-filelist-empty{padding:14px 12px;font-size:13px;color:var(--tk-text-faint)}
+.tk-link-btn{
+    border:1px solid var(--tk-border-strong);
+    background:#fff;
+    border-radius:7px;
+    padding:4px 10px;
+    font-size:12px;
+    font-weight:600;
+    cursor:pointer;
+    transition:background .15s var(--tk-ease),border-color .15s var(--tk-ease),color .15s var(--tk-ease);
+}
+.tk-link-btn:hover:not(:disabled){background:var(--tk-primary);color:#fff;border-color:var(--tk-primary)}
+.tk-link-btn:disabled{opacity:.5;cursor:not-allowed}
+
+/* ---------------- 状态条 ---------------- */
+.tk-status{
+    margin:14px 0 0;
+    padding:12px 15px;
+    border:1px solid var(--tk-border);
+    border-left:3px solid var(--tk-border-strong);
+    border-radius:var(--tk-radius-sm);
+    background:var(--tk-card-soft);
+    color:var(--tk-text-muted);
+    font-size:13.5px;
+    line-height:1.6;
+    white-space:pre-wrap;
+}
+.tk-status.tk-ok{background:var(--tk-ok-bg);border-color:#cbe9d6;border-left-color:var(--tk-ok-fg);color:var(--tk-ok-fg)}
+.tk-status.tk-error{background:var(--tk-err-bg);border-color:#f3d0ce;border-left-color:var(--tk-err-fg);color:var(--tk-err-fg)}
+
+/* ---------------- 结果区 ---------------- */
+.tk-result{
+    border:1px solid var(--tk-border);
+    border-radius:var(--tk-radius-sm);
+    background:var(--tk-card-soft);
+    padding:16px;
+    min-height:120px;
+    overflow:auto;
+}
+.tk-result iframe{width:100%;height:480px;border:0;background:#fff;border-radius:var(--tk-radius-xs)}
+
+/* 下载入口做成主按钮样式，比裸链接更明确 */
+.tk-download{
+    display:inline-flex;
+    align-items:center;
+    gap:9px;
+    padding:11px 18px;
+    border-radius:var(--tk-radius-sm);
+    background:var(--tk-primary);
+    color:#fff;
+    font-size:14px;
+    font-weight:650;
+    text-decoration:none;
+    box-shadow:0 1px 2px rgba(16,24,40,.14);
+    transition:background .18s var(--tk-ease),box-shadow .18s var(--tk-ease),transform .12s var(--tk-ease);
+}
+.tk-download::before{
+    content:"";
+    flex:none;
+    width:15px;
+    height:15px;
+    background:no-repeat center/15px 15px
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3v12'/%3E%3Cpath d='m7 10 5 5 5-5'/%3E%3Cpath d='M5 21h14'/%3E%3C/svg%3E");
+}
+.tk-download:hover{background:var(--tk-primary-hover);box-shadow:0 8px 20px rgba(16,24,40,.18);color:#fff}
+.tk-download:active{transform:translateY(1px)}
+.tk-result-detail{display:block;margin-top:10px;font-size:13px;color:var(--tk-text-muted)}
+
+/* 隐藏滚动条，保持页面干净（与 home.css 一致） */
+::-webkit-scrollbar{width:0;background:transparent}
+*{scrollbar-width:none}
+body{-ms-overflow-style:none}
+
+@media(max-width:760px){
+    .tk-page{padding:28px 16px 56px}
+    .tk-grid{grid-template-columns:1fr}
+    .tk-mode{flex-direction:column}
+    .tk-header h1{font-size:24px}
+}
+
+@media(prefers-reduced-motion:reduce){
+    *{transition:none!important;animation:none!important}
+    html{scroll-behavior:auto}
+}

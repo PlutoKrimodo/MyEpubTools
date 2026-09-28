@@ -1,0 +1,256 @@
+/* 外层壳样式：侧边栏 + 功能视图 + 首页（环形功能入口）。
+   视觉令牌与 static/toolkit/toolkit.css 保持一致，两边改动请同步。 */
+*{box-sizing:border-box}
+
+:root{
+    --tk-bg:#f4f6f9;
+    --tk-card:#ffffff;
+    --tk-border:#e6e9ef;
+    --tk-border-strong:#cfd6e0;
+    --tk-text:#1b2027;
+    --tk-text-muted:#5f6b7a;
+    --tk-primary:#20242a;
+    --tk-primary-hover:#343b45;
+    --tk-accent:#3b6cf6;
+    --tk-node:104px;          /* 首页圆形按钮直径，由 home.js 按可用空间重算 */
+    --tk-sidebar:180px;       /* 侧边栏展开宽度，收起时归零 */
+    --tk-ease-pop:cubic-bezier(.34,1.45,.64,1);   /* 放大时带一点点回弹 */
+}
+
+html,body{height:100%}
+body{
+    margin:0;
+    background:var(--tk-bg);
+    color:var(--tk-text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",sans-serif;
+    font-size:15px;
+    line-height:1.5;
+    overflow:hidden;
+}
+
+.app{display:flex;height:100vh}
+
+/* ---------------- 侧边栏 ---------------- */
+.sidebar{
+    width:var(--tk-sidebar);
+    background:#20242a;
+    color:#fff;
+    display:flex;
+    flex-direction:column;
+    flex-shrink:0;
+    overflow:hidden;
+    transition:width .22s ease,visibility .22s ease;
+}
+.sidebar-header{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:18px 12px 18px 16px;
+    font-size:16px;
+    font-weight:600;
+    border-bottom:1px solid #333;
+}
+.sidebar-title{flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.sidebar-toggle{
+    flex:none;
+    width:26px;
+    height:26px;
+    padding:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border:1px solid #3a3f47;
+    border-radius:6px;
+    background:#262a31;
+    color:#aab2bd;
+    font:inherit;
+    font-size:13px;
+    line-height:1;
+    cursor:pointer;
+    transition:background .18s ease,color .18s ease,border-color .18s ease;
+}
+.sidebar-toggle:hover{background:#333841;color:#fff;border-color:#4a5058}
+.sidebar-toggle:focus-visible{outline:none;border-color:#8ab4f8;color:#fff}
+
+.sidebar-nav{flex:1;padding:12px 0;overflow:auto}
+
+/* 收起态：彻底收回侧边栏（不再保留窄轨与首字），改用左上角浮动按钮展开 */
+.app.is-collapsed .sidebar{width:0;visibility:hidden}
+.app.is-collapsed .sidebar-header{padding:18px 0;justify-content:center}
+.app.is-collapsed .sidebar-title{display:none}
+
+/* 浮动展开按钮：仅「功能页 + 收起态」出现（首页本就没有侧边栏） */
+.sidebar-fab{
+    position:fixed;
+    left:12px;
+    top:14px;
+    z-index:60;
+    width:34px;
+    height:34px;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    border:1px solid var(--tk-border-strong);
+    border-radius:8px;
+    background:var(--tk-card);
+    color:var(--tk-text);
+    font:inherit;
+    font-size:16px;
+    line-height:1;
+    cursor:pointer;
+    box-shadow:0 4px 12px rgba(8,11,15,.16);
+    transition:background .18s ease,color .18s ease,border-color .18s ease;
+}
+.app.is-tool.is-collapsed .sidebar-fab{display:flex}
+.sidebar-fab:hover{background:var(--tk-primary);color:#fff;border-color:var(--tk-primary)}
+.sidebar-fab:focus-visible{outline:none;border-color:#8ab4f8}
+
+.nav-item{
+    position:relative;
+    display:block;
+    padding:12px 16px;
+    color:#ccc;
+    text-decoration:none;
+    cursor:pointer;
+    transition:background .2s ease,color .2s ease;
+    font-size:14px;
+}
+.nav-item:hover{background:#2d3139;color:#fff}
+
+/* 选中态：比侧边栏底色更深的一块，再加左侧高亮条与加粗白字，
+   与普通项拉开区分度（原来的 #3d4149 反而比底色浅，几乎看不出来）。 */
+.nav-item.active{
+    background:#0b0e12;
+    color:#fff;
+    font-weight:650;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.05);
+}
+.nav-item.active::before{
+    content:"";
+    position:absolute;
+    left:0;
+    top:0;
+    bottom:0;
+    width:3px;
+    background:#8ab4f8;
+}
+
+.nav-item.nav-back{color:#8f98a5;font-size:13px}
+.nav-item.nav-back:hover{color:#fff}
+.nav-sep{height:1px;margin:8px 16px;background:#333}
+
+.nav-abbr{display:none}
+
+/* ---------------- 视图切换 ---------------- */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.content{flex:1;overflow:hidden}
+.content iframe{width:100%;height:100%;border:none;background:#fff}
+
+/* 首页：没有侧边栏；功能页：没有环形入口。
+   用 display 切换而非重建 DOM，iframe 保持存活，切回来时板块状态还在。 */
+.app.is-home .sidebar{display:none}
+.app.is-home .content{display:none}
+.app.is-tool .home{display:none}
+
+/* ---------------- 首页（启动台） ---------------- */
+/* 四周黑、中央白：中央的亮色与环上的白色按钮形成对比。
+   中心略微下移，对准排布区（而不是整块首页）的中心。 */
+.home{
+    flex:1;
+    min-height:0;
+    display:flex;
+    flex-direction:column;
+    padding:30px 24px 34px;
+    background-color:#07080b;
+    background-image:radial-gradient(52% 52% at 50% calc(50% + 30px),
+        #ffffff 0%,
+        #f7f9fb 12%,
+        #e3e8ee 26%,
+        #b6bdc7 42%,
+        #7d848e 58%,
+        #454b53 74%,
+        #1b1f24 88%,
+        #07080b 100%);
+}
+.home-head{flex:none;text-align:center}
+/* 顶栏落在渐变的暗端，所以标题反过来用浅色，保证清晰 */
+.home-head h1{margin:0 0 7px;font-size:26px;font-weight:650;letter-spacing:.4px;color:#fff}
+.home-head p{margin:0;color:rgba(255,255,255,.68);font-size:13.5px}
+
+.home-stage{position:relative;flex:1;min-height:0;margin-top:8px}
+
+.home-ring{
+    position:absolute;
+    transform:translate(-50%,-50%);
+    border:1px dashed rgba(255,255,255,.3);
+    border-radius:50%;
+    pointer-events:none;
+}
+
+.home-node{
+    position:absolute;
+    left:0;
+    top:0;
+    z-index:1;
+    transform:translate(-50%,-50%);
+    width:var(--tk-node);
+    height:var(--tk-node);
+    padding:10px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:2px;
+    overflow:hidden;
+    border:1px solid rgba(32,36,42,.22);
+    border-radius:50%;
+    background:var(--tk-card);
+    color:var(--tk-text);
+    font-family:inherit;
+    font-size:calc(var(--tk-node) * .132);
+    font-weight:600;
+    line-height:1.24;
+    text-align:center;
+    cursor:pointer;
+    box-shadow:0 10px 24px rgba(8,11,15,.3);
+    transition:transform .18s var(--tk-ease-pop),box-shadow .18s ease,
+               background .18s ease,color .18s ease,border-color .18s ease;
+}
+/* 鼠标一移上去就放大（不必等点击），并抬高一层，免得被相邻按钮压住 */
+.home-node:hover,.home-node:focus-visible{
+    z-index:3;
+    background:var(--tk-primary);
+    color:#fff;
+    border-color:var(--tk-primary);
+    transform:translate(-50%,-50%) scale(1.13);
+    box-shadow:0 18px 38px rgba(8,11,15,.42);
+    outline:none;
+}
+.home-node:active{transform:translate(-50%,-50%) scale(1.05)}
+.home-node-label{display:block;word-break:break-word}
+
+.home-empty{
+    position:absolute;
+    left:50%;
+    top:50%;
+    transform:translate(-50%,-50%);
+    margin:0;
+    color:var(--tk-text-muted);
+    font-size:14px;
+}
+
+::-webkit-scrollbar{width:0;background:transparent}
+*{scrollbar-width:none}
+body{-ms-overflow-style:none}
+
+@media(max-width:820px){
+    .home{padding:20px 14px 24px}
+    .home-head h1{font-size:22px}
+    .home-head p{font-size:12.5px}
+}
+
+@media(prefers-reduced-motion:reduce){
+    .sidebar{transition:none}
+    .home-node{transition:none}
+    .home-node:hover,.home-node:focus-visible{transform:translate(-50%,-50%)}
+}

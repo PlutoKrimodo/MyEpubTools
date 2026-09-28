@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>EPUB 注释处理工具</title>
+<style>
+/* 视觉令牌与通用工具页（static/toolkit/toolkit.css）保持一致 */
+:root{
+    --bg:#f4f6f9;
+    --card:#ffffff;
+    --card-soft:#f8fafc;
+    --border:#e6e9ef;
+    --border-strong:#cfd6e0;
+    --text:#1b2027;
+    --text-muted:#5f6b7a;
+    --text-faint:#8894a3;
+    --primary:#20242a;
+    --primary-hover:#343b45;
+    --accent:#3b6cf6;
+    --accent-soft:rgba(59,108,246,.08);
+    --accent-ring:rgba(59,108,246,.22);
+    --ok-bg:#ecf8f0;
+    --ok-fg:#1f7a45;
+    --err-bg:#fdf0f0;
+    --err-fg:#b3261e;
+    --radius:16px;
+    --radius-sm:10px;
+    --radius-xs:8px;
+    --shadow-sm:0 1px 2px rgba(16,24,40,.04),0 1px 3px rgba(16,24,40,.05);
+    --shadow-md:0 6px 18px rgba(16,24,40,.07);
+    --ease:cubic-bezier(.2,.7,.3,1);
+}
+*{box-sizing:border-box}
+body{
+    margin:0;
+    background-color:var(--bg);
+    background-image:radial-gradient(120% 55% at 50% 0,#ffffff 0%,rgba(255,255,255,0) 62%);
+    background-repeat:no-repeat;
+    color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+}
+.container{max-width:1080px;margin:0 auto;padding:40px 24px 72px}
+header{margin-bottom:28px;padding-bottom:20px;border-bottom:1px solid var(--border)}
+h1{font-size:29px;line-height:1.24;margin:0 0 9px;font-weight:700;letter-spacing:-.01em}
+.subtitle{color:var(--text-muted);margin:0;font-size:14.5px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:24px;
+    box-shadow:var(--shadow-sm);
+    transition:box-shadow .25s var(--ease),border-color .25s var(--ease);
+}
+.card:hover{box-shadow:var(--shadow-md);border-color:#dde3ec}
+.card.full{grid-column:1/-1}
+h2{display:flex;align-items:center;gap:10px;font-size:16px;margin:0 0 18px;font-weight:650;letter-spacing:-.005em}
+h2::before{content:"";flex:none;width:7px;height:7px;border-radius:999px;background:var(--accent);box-shadow:0 0 0 4px var(--accent-soft)}
+label{display:block;font-size:13.5px;font-weight:600;margin:0 0 8px}
+textarea{
+    width:100%;min-height:220px;resize:vertical;
+    border:1px solid var(--border-strong);border-radius:var(--radius-sm);
+    padding:12px 13px;background:#fff;color:var(--text);
+    font:13px/1.7 Consolas,"SF Mono",Menlo,monospace;
+    transition:border-color .18s var(--ease),box-shadow .18s var(--ease);
+}
+select{
+    width:100%;border:1px solid var(--border-strong);border-radius:var(--radius-sm);
+    padding:11px 13px;background:#fff;color:var(--text);font:inherit;font-size:14px;
+    transition:border-color .18s var(--ease),box-shadow .18s var(--ease);
+}
+select:hover{border-color:#b7c1cf}
+textarea:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 4px var(--accent-ring)}
+::placeholder{color:#9aa5b1}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.mode{display:flex;gap:6px;margin-bottom:16px;padding:5px;background:var(--card-soft);border:1px solid var(--border);border-radius:var(--radius-sm)}
+.mode button{
+    flex:1;padding:10px 14px;border:0;background:transparent;border-radius:var(--radius-xs);
+    cursor:pointer;font:inherit;font-size:14px;font-weight:600;color:var(--text-muted);
+    transition:background .18s var(--ease),color .18s var(--ease),box-shadow .18s var(--ease);
+}
+.mode button:hover:not(.active){color:var(--text);background:rgba(16,24,40,.045)}
+.mode button.active{background:var(--card);color:var(--text);box-shadow:var(--shadow-sm)}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+button.primary{
+    border:0;background:var(--primary);color:#fff;padding:11px 20px;border-radius:var(--radius-sm);
+    cursor:pointer;font-size:14px;font-weight:650;box-shadow:0 1px 2px rgba(16,24,40,.14);
+    transition:background .18s var(--ease),box-shadow .18s var(--ease),transform .12s var(--ease);
+}
+button.primary:hover:not(:disabled){background:var(--primary-hover);box-shadow:0 8px 20px rgba(16,24,40,.18)}
+button.primary:active:not(:disabled){transform:translateY(1px)}
+button.secondary{
+    border:1px solid var(--border-strong);background:#fff;color:var(--text);
+    padding:11px 20px;border-radius:var(--radius-sm);cursor:pointer;font-size:14px;font-weight:600;
+    transition:background .18s var(--ease),border-color .18s var(--ease);
+}
+button.secondary:hover:not(:disabled){background:var(--card-soft);border-color:#9fabbb}
+button:focus-visible{outline:none;box-shadow:0 0 0 4px var(--accent-ring)}
+button:disabled{opacity:.5;cursor:not-allowed}
+.hidden{display:none!important}
+.status{
+    margin-top:14px;padding:12px 15px;border-radius:var(--radius-sm);
+    border:1px solid var(--border);border-left:3px solid var(--border-strong);
+    background:var(--card-soft);color:var(--text-muted);font-size:13.5px;white-space:pre-wrap;
+}
+.status.error{background:var(--err-bg);border-color:#f3d0ce;border-left-color:var(--err-fg);color:var(--err-fg)}
+.status.ok{background:var(--ok-bg);border-color:#cbe9d6;border-left-color:var(--ok-fg);color:var(--ok-fg)}
+.result{
+    border:1px solid var(--border);border-radius:var(--radius-sm);
+    background:var(--card-soft);padding:16px;min-height:220px;overflow:auto;
+}
+.result iframe{width:100%;height:480px;border:0;background:#fff;border-radius:var(--radius-xs)}
+.hint{font-size:12.5px;color:var(--text-faint);margin-top:8px;line-height:1.6}
+#epubSection{margin-top:16px}
+/* 主上传区：虚线区域 + 图标，与通用工具页保持一致 */
+.drop{
+    display:flex;align-items:center;gap:14px;
+    padding:16px 18px;border:1.5px dashed var(--border-strong);
+    border-radius:var(--radius-sm);background:var(--card-soft);
+    transition:border-color .2s var(--ease),background .2s var(--ease);
+}
+.drop:hover,.drop:focus-within{border-color:var(--accent);background:var(--accent-soft)}
+.drop::before{
+    content:"";flex:none;width:40px;height:40px;border-radius:11px;
+    background:#fff no-repeat center/20px 20px
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235f6b7a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 15V3'/%3E%3Cpath d='m7 8 5-5 5 5'/%3E%3Cpath d='M20 21H4'/%3E%3C/svg%3E");
+    box-shadow:var(--shadow-sm);
+}
+.drop input[type=file]{flex:1;min-width:0;border:0;background:transparent;padding:0;font:inherit;font-size:13.5px;color:var(--text-muted)}
+.drop input[type=file]:focus{box-shadow:none}
+input[type=file]::file-selector-button{
+    margin-right:12px;padding:8px 15px;border:1px solid var(--border-strong);border-radius:var(--radius-xs);
+    background:#fff;color:var(--text);font:inherit;font-size:13.5px;font-weight:600;cursor:pointer;
+    transition:background .18s var(--ease),color .18s var(--ease),border-color .18s var(--ease);
+}
+.drop:hover input[type=file]::file-selector-button{background:var(--primary);color:#fff;border-color:var(--primary)}
+.checkbox-group{display:flex;flex-direction:column;gap:9px}
+.checkbox-group label{display:flex;align-items:center;gap:9px;font-weight:400;cursor:pointer;margin:0}
+.checkbox-group input[type=checkbox]{width:17px;height:17px;margin:0;cursor:pointer;accent-color:var(--primary)}
+::-webkit-scrollbar{width:0;background:transparent}
+*{scrollbar-width:none}
+body{-ms-overflow-style:none}
+@media(max-width:760px){
+    .container{padding:28px 16px 56px}
+    .grid{grid-template-columns:1fr}
+    .card.full{grid-column:auto}
+    .row{grid-template-columns:1fr}
+    h1{font-size:24px}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="container">
+<header>
+<h1>EPUB 注释处理工具</h1>
+<p class="subtitle">智能识别常见 EPUB 脚注、尾注与跨 XHTML 注释链接，并将其内联或彻底删除。</p>
+</header>
+
+<div class="card">
+<h2>处理模式</h2>
+<div class="mode">
+<button id="epubMode" class="active">EPUB 文件</button>
+<button id="htmlMode">HTML 预览</button>
+</div>
+
+<div id="sampleSection">
+<label for="sample">样本 HTML</label>
+<textarea id="sample" placeholder="粘贴一章或一段 XHTML/HTML，用于检测注释引用样式并预览处理效果。"></textarea>
+<div class="actions">
+<input id="sampleFile" type="file" accept=".html,.htm,.xhtml" style="display:none">
+<button class="secondary" onclick="document.getElementById('sampleFile').click()">上传 HTML 样本</button>
+<button class="secondary" id="detectBtn">检测样本样式</button>
+</div>
+<div id="detectStatus" class="status hidden"></div>
+</div>
+
+<div id="epubSection">
+<label for="epubFile">EPUB 文件</label>
+<div class="drop">
+<input id="epubFile" type="file" accept=".epub">
+</div>
+<p class="hint">最大 50MB。文件只在本地服务器处理，不需要上传到第三方服务。</p>
+</div>
+</div>
+
+<div class="grid" style="margin-top:18px">
+<div class="card">
+<h2>处理设置</h2>
+<div class="row">
+<div>
+<label>处理功能</label>
+<div class="checkbox-group">
+<label><input type="checkbox" id="optRemoveMarker" value="remove_marker" checked> 删除正文内的注释标识</label>
+<label><input type="checkbox" id="optInline" value="inline" checked> 注释内联</label>
+<label><input type="checkbox" id="optRemoveNote" value="remove_note" checked> 删除文末注释</label>
+</div>
+</div>
+<div id="styleBox">
+<label for="style">引用标记样式</label>
+<select id="style">
+<option>方括号</option>
+<option>圆括号</option>
+<option>花括号</option>
+<option>纯数字</option>
+<option>其他</option>
+</select>
+</div>
+</div>
+<div class="hint">支持 fn_1、notef1、footnote1、endnote1 等 ID，以及 EPUB 语义属性、常见 footnotes/fnote 容器和跨 XHTML 文件的注释链接。</div>
+<div class="actions">
+<button class="primary" id="processBtn">开始处理</button>
+<button class="secondary" id="previewBtn">预览当前 HTML</button>
+</div>
+<div id="processStatus" class="status hidden"></div>
+</div>
+
+<div class="card">
+<h2>处理结果 / 预览</h2>
+<div id="result" class="result"><span class="hint">HTML 模式下可在此查看处理后的页面；EPUB 模式处理完成后会自动下载文件。</span></div>
+</div>
+</div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+let mode = "epub";
+
+function status(el, text, type="") {
+  el.textContent = text;
+  el.className = "status " + type;
+  el.classList.remove("hidden");
+}
+function setMode(next) {
+  mode = next;
+  $("epubMode").classList.toggle("active", next==="epub");
+  $("htmlMode").classList.toggle("active", next==="html");
+  $("epubSection").classList.toggle("hidden", next!=="epub");
+}
+$("epubMode").onclick = () => setMode("epub");
+$("htmlMode").onclick = () => setMode("html");
+
+function getSelectedActions() {
+  const actions = [];
+  if ($("optRemoveMarker").checked) actions.push("remove_marker");
+  if ($("optInline").checked) actions.push("inline");
+  if ($("optRemoveNote").checked) actions.push("remove_note");
+  return actions;
+}
+
+function statsText(s) {
+  if (!s) return "处理完成。";
+  return `处理完成：识别注释 ${s.notes_found ?? 0} 条，内联 ${s.inlined ?? 0} 处，删除正文标识 ${s.markers_removed ?? 0} 处。`;
+}
+
+$("sampleFile").onchange = async e => {
+  const f = e.target.files[0];
+  if (!f) return;
+  $("sample").value = await f.text();
+};
+
+$("detectBtn").onclick = async () => {
+  const fd = new FormData();
+  fd.append("html", $("sample").value);
+  try {
+    const r = await fetch("/notes/api/detect", {method:"POST", body:fd});
+    const data = await r.json();
+    if (!data.success) throw new Error(data.error);
+    $("style").value = data.style;
+    status($("detectStatus"),
+      `检测结果：${data.style}\n方括号 ${data.counts["方括号"]} 次，圆括号 ${data.counts["圆括号"]} 次，花括号 ${data.counts["花括号"]} 次，纯数字 ${data.counts["纯数字"]} 次`,
+      "ok");
+  } catch(e) {
+    status($("detectStatus"), e.message, "error");
+  }
+};
+
+$("previewBtn").onclick = async () => {
+  const source = $("sample").value;
+  if (!source.trim()) {
+    status($("processStatus"), "请先提供 HTML 样本。", "error");
+    return;
+  }
+  const actions = getSelectedActions();
+  if (actions.length === 0) {
+    status($("processStatus"), "请至少选择一项处理功能。", "error");
+    return;
+  }
+  const fd = new FormData();
+  fd.append("html", source);
+  actions.forEach(a => fd.append("actions", a));
+  fd.append("style", $("style").value);
+  try {
+    const r = await fetch("/notes/api/preview", {method:"POST", body:fd});
+    const data = await r.json();
+    if (!data.success) throw new Error(data.error);
+    const iframe = document.createElement("iframe");
+    $("result").replaceChildren(iframe);
+    iframe.contentDocument.open();
+    iframe.contentDocument.write(data.html);
+    iframe.contentDocument.close();
+    status($("processStatus"), statsText(data.stats), "ok");
+  } catch(e) {
+    status($("processStatus"), e.message, "error");
+  }
+};
+
+$("processBtn").onclick = async () => {
+  if (mode === "html") {
+    $("previewBtn").click();
+    return;
+  }
+  const f = $("epubFile").files[0];
+  if (!f) {
+    status($("processStatus"), "请选择 EPUB 文件。", "error");
+    return;
+  }
+  if (f.size > 50*1024*1024) {
+    status($("processStatus"), "文件超过 50MB 限制。", "error");
+    return;
+  }
+  const actions = getSelectedActions();
+  if (actions.length === 0) {
+    status($("processStatus"), "请至少选择一项处理功能。", "error");
+    return;
+  }
+  const fd = new FormData();
+  fd.append("epub", f);
+  actions.forEach(a => fd.append("actions", a));
+  fd.append("style", $("style").value);
+  $("processBtn").disabled = true;
+  status($("processStatus"), "正在处理 EPUB，请稍候……");
+  try {
+    const r = await fetch("/notes/api/process", {method:"POST", body:fd});
+    if (!r.ok) {
+      let msg = "处理失败";
+      try { const d = await r.json(); msg = d.error || msg; } catch {}
+      throw new Error(msg);
+    }
+    const blob = await r.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = "processed.epub";
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+    const found = r.headers.get("X-Notes-Found");
+    const inlined = r.headers.get("X-Notes-Inlined");
+    const removed = r.headers.get("X-Notes-Removed");
+    const detail = (found === null && inlined === null && removed === null)
+      ? "处理完成，已开始下载 processed.epub。"
+      : `处理完成，已开始下载 processed.epub。识别注释 ${found ?? "-"} 条，内联 ${inlined ?? "-"} 处，删除正文标识 ${removed ?? "-"} 处。`;
+    status($("processStatus"), detail, "ok");
+  } catch(e) {
+    status($("processStatus"), e.message, "error");
+  } finally {
+    $("processBtn").disabled = false;
+  }
+};
+</script>
+</body>
+</html>

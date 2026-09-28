@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{{ page.title }}</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='toolkit/toolkit.css') }}">
+</head>
+<body>
+<div class="tk-page">
+    <header class="tk-header">
+        <h1>{{ page.title }}</h1>
+        <p class="tk-subtitle" id="tkSubtitle">{{ page.subtitle }}</p>
+    </header>
+
+    <section class="tk-card tk-hidden" id="tkModeCard">
+        <div class="tk-mode" id="tkMode" role="tablist"></div>
+    </section>
+
+    <section class="tk-card">
+        <h2 id="tkUploadTitle">{{ page.upload.label }}</h2>
+        <div class="tk-drop">
+            <input id="tkFile" type="file" aria-labelledby="tkUploadTitle">
+        </div>
+        <p class="tk-memory tk-hidden" id="tkMemory">
+            <span class="tk-memory-text" id="tkMemoryText"></span>
+            <button type="button" class="tk-link-btn" id="tkMemoryClear">清除</button>
+        </p>
+        <div class="tk-order tk-hidden" id="tkFileOrder"></div>
+        <p class="tk-hint" id="tkUploadHint">{{ page.upload.hint }}</p>
+    </section>
+
+    <section class="tk-card" id="tkFieldsCard">
+        <h2 id="tkFieldsTitle">{{ page.fields_title }}</h2>
+        <div class="tk-grid" id="tkFields"></div>
+        <p class="tk-hint tk-hidden" id="tkFieldsHint"></p>
+    </section>
+
+    <section class="tk-actions">
+        <button type="button" class="tk-primary" id="tkSubmit">{{ page.submit_label }}</button>
+        <button type="button" class="tk-secondary tk-hidden" id="tkPreview">{{ page.preview_label }}</button>
+        <button type="button" class="tk-secondary tk-hidden" id="tkReload">{{ page.load_label }}</button>
+    </section>
+
+    <p class="tk-status tk-hidden" id="tkStatus" role="status" aria-live="polite"></p>
+
+    <section class="tk-card">
+        <h2 id="tkResultTitle">{{ page.result_title }}</h2>
+        <p class="tk-hint tk-hidden" id="tkResultHint"></p>
+        <div class="tk-result" id="tkResult">
+            <span class="tk-hint">尚未处理。</span>
+        </div>
+    </section>
+</div>
+<script id="tkPageConfig" type="application/json">{{ page | tojson }}</script>
+<script src="{{ url_for('static', filename='toolkit/toolkit.js') }}"></script>
+</body>
+</html>

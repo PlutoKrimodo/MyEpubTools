@@ -1,0 +1,5 @@
+workspace:
+  launch:
+    button:
+      name: EPUB_TOOLS
+      description: EPUB工具箱

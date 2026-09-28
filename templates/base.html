@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>EPUB 工具箱</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='home/home.css') }}">
+    <script>
+        /* 所有板块共享的「当前书籍」。
+           各板块在 iframe 里整页加载，切走时它自己的 JS 状态就没了；而这一层页面
+           不会跳转，所以把 File 对象挂在这里就能跨板块保留。
+           只存在内存里：刷新或关闭本页面即失效，不往磁盘写任何东西。 */
+        window.EPUB_MEMORY = {
+            files: null,
+            fileName: "",
+            set(files) {
+                const list = Array.from(files || []);
+                this.files = list.length ? list : null;
+                if (!list.length) {
+                    this.fileName = "";
+                } else if (list.length === 1) {
+                    this.fileName = list[0].name;
+                } else {
+                    this.fileName = list.length + " 个文件";
+                }
+            },
+            get() {
+                return this.files;
+            },
+            clear() {
+                this.files = null;
+                this.fileName = "";
+            }
+        };
+    </script>
+</head>
+<body>
+    <div class="app is-home" id="tkApp">
+        <aside class="sidebar" id="tkSidebar">
+            <div class="sidebar-header">
+                <span class="sidebar-title">EPUB 工具箱</span>
+                <button type="button" class="sidebar-toggle" id="tkSidebarToggle"
+                        aria-expanded="true" aria-controls="tkSidebar" title="收起导航栏">«</button>
+            </div>
+            <nav class="sidebar-nav">
+                <a class="nav-item nav-back" id="tkHomeNav" title="返回首页">
+                    <span class="nav-abbr" aria-hidden="true">←</span>
+                    <span class="nav-label">首页</span>
+                </a>
+                <div class="nav-sep"></div>
+                {% for tool in tools %}
+                <a class="nav-item" data-key="{{ tool.key }}" data-url="{{ tool.url }}" title="{{ tool.title }}">
+                    <span class="nav-abbr" aria-hidden="true">{{ tool.title[0] }}</span>
+                    <span class="nav-label">{{ tool.title }}</span>
+                </a>
+                {% endfor %}
+            </nav>
+        </aside>
+        <button type="button" class="sidebar-fab" id="tkSidebarFab"
+                aria-controls="tkSidebar" title="展开导航栏">»</button>
+        <main class="main">
+            <section class="home" id="tkHome" aria-label="功能导航">
+                <header class="home-head">
+                    <h1>EPUB 工具箱</h1>
+                    <p>选择要处理的环节</p>
+                </header>
+                <div class="home-stage" id="tkStage">
+                    <div class="home-ring" id="tkRing" aria-hidden="true"></div>
+                    {% for tool in tools %}
+                    <button type="button" class="home-node" data-key="{{ tool.key }}"
+                            data-url="{{ tool.url }}" title="{{ tool.description }}">
+                        <span class="home-node-label">{{ tool.title }}</span>
+                    </button>
+                    {% endfor %}
+                    {% if not tools %}
+                    <p class="home-empty">还没有可用的功能模块。</p>
+                    {% endif %}
+                </div>
+            </section>
+            <div class="content" id="tkWorkspace">
+                <iframe id="contentFrame" title="功能页面"></iframe>
+            </div>
+        </main>
+    </div>
+    <script src="{{ url_for('static', filename='home/home.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>EPUB ⇄ TXT 转换工具</title>
+    <link rel="stylesheet" href="/txt2epub/web/style.css">
+</head>
+<body>
+    <div class="page">
+        <header>
+            <h1>EPUB ⇄ TXT 转换工具</h1>
+            <p class="subtitle">TXT 按章节生成带模板样式的 EPUB；也可以把 EPUB 的正文按阅读顺序提取成纯文本。</p>
+        </header>
+
+        <section class="card">
+            <div class="mode" id="modeSwitch" role="tablist" aria-label="转换方向">
+                <button type="button" class="active" data-mode="to-epub" role="tab" aria-selected="true">TXT → EPUB</button>
+                <button type="button" data-mode="to-txt" role="tab" aria-selected="false">EPUB → TXT</button>
+            </div>
+        </section>
+
+        <section class="card" data-mode="to-epub">
+            <h2>文件</h2>
+            <div class="grid">
+                <div>
+                    <label for="inputFile">TXT 文件</label>
+                    <input id="inputFile" type="file" accept=".txt,text/plain">
+                </div>
+                <div>
+                    <label for="templateFile">模板 EPUB</label>
+                    <input id="templateFile" type="file" accept=".epub,application/epub+zip">
+                    <p class="hint">可选，默认使用程序根目录的 sample_test.epub</p>
+                </div>
+            </div>
+            <p class="hint">按「书名 / 第X章 / Chapter N」等规则识别章节，可在下方自定义正则。</p>
+        </section>
+
+        <section class="card" data-mode="to-txt">
+            <h2>文件</h2>
+            <label for="epubFile">EPUB 文件</label>
+            <input id="epubFile" type="file" accept=".epub,application/epub+zip">
+            <p class="hint">
+                按 spine（阅读顺序）提取正文，封面、目录与导航文档不会进入结果；
+                正文里的 &lt;br&gt; 保留为独立一行，注音标签会被丢弃。
+            </p>
+        </section>
+
+        <section class="card">
+            <h2>输出文件夹</h2>
+            <label for="outputDirectory">输出文件夹</label>
+            <input id="outputDirectory" type="text" value="outputs">
+            <div class="actions">
+                <button id="selectOutputDirectoryBtn" type="button">选择文件夹</button>
+                <button id="resetOutputDirectoryBtn" type="button" disabled>恢复默认</button>
+            </div>
+            <p class="hint">默认写在项目的 outputs 目录；也可以选择其它文件夹。</p>
+        </section>
+
+        <section class="card" data-mode="to-epub">
+            <h2>书籍信息</h2>
+            <div class="grid">
+                <div>
+                    <label for="title">书名</label>
+                    <input id="title" type="text" placeholder="默认使用 TXT 文件名">
+                </div>
+                <div>
+                    <label for="author">作者</label>
+                    <input id="author" type="text" value="未知">
+                </div>
+                <div>
+                    <label for="subtitle">副标题</label>
+                    <input id="subtitle" type="text" placeholder="可选">
+                </div>
+                <div>
+                    <label for="lang">语言</label>
+                    <input id="lang" type="text" value="zh-Hans">
+                </div>
+            </div>
+        </section>
+
+        <section class="card" data-mode="to-epub">
+            <h2>章节识别</h2>
+            <div class="grid">
+                <div>
+                    <label for="encoding">文本编码</label>
+                    <select id="encoding">
+                        <option value="utf-8">UTF-8</option>
+                        <option value="gb18030">GB18030 / GBK</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="chapterMode">章节模式</label>
+                    <select id="chapterMode">
+                        <option value="append">自定义规则 + 内置规则</option>
+                        <option value="custom">只使用自定义规则</option>
+                    </select>
+                </div>
+            </div>
+            <div style="margin-top:14px">
+                <label for="chapterRegex">自定义章节正则</label>
+                <input id="chapterRegex" type="text" placeholder="例如：^第[一二三四五六七八九十]+章.*$">
+            </div>
+            <div style="margin-top:14px">
+                <label for="chapterSamples">从示例生成正则</label>
+                <textarea id="chapterSamples" rows="4" placeholder="每行粘贴一个章节标题，例如：&#10;第1章 开始&#10;第2章 发展&#10;第三章 结局"></textarea>
+                <div style="margin-top:8px">
+                    <button id="generateRegexBtn" type="button">从示例生成正则</button>
+                </div>
+                <p class="hint">粘贴多行章节标题后点击生成，结果会填入上方「自定义章节正则」；可再点「预览章节」验证。各行格式需一致。</p>
+            </div>
+            <label class="checkbox">
+                <input id="tocPage" type="checkbox" checked>
+                <span>生成正文目录页</span>
+            </label>
+        </section>
+
+        <section class="card" data-mode="to-txt">
+            <h2>导出选项</h2>
+            <div class="grid">
+                <div>
+                    <label for="lineEnding">换行符</label>
+                    <select id="lineEnding">
+                        <option value="lf">LF（通用）</option>
+                        <option value="crlf">CRLF（Windows 记事本）</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="outputEncoding">输出编码</label>
+                    <select id="outputEncoding">
+                        <option value="utf-8">UTF-8</option>
+                        <option value="utf-8-sig">UTF-8 with BOM</option>
+                        <option value="gb18030">GB18030 / GBK</option>
+                    </select>
+                </div>
+            </div>
+            <label class="checkbox">
+                <input id="keepTitles" type="checkbox" checked>
+                <span>保留章节标题（关掉只留正文段落）</span>
+            </label>
+            <label class="checkbox">
+                <input id="blankLine" type="checkbox">
+                <span>每一行之后空一行</span>
+            </label>
+            <p class="hint">每段一行，段首缩进与行内多余空白会被规整；文件名取书里的书名。</p>
+        </section>
+
+        <section class="actions">
+            <button id="previewBtn" type="button" data-mode="to-epub">预览章节</button>
+            <button id="buildBtn" type="button" class="primary" data-mode="to-epub">生成 EPUB</button>
+            <button id="extractPreviewBtn" type="button" data-mode="to-txt">预览文本</button>
+            <button id="extractBtn" type="button" class="primary" data-mode="to-txt">导出 TXT</button>
+        </section>
+
+        <section id="message" class="status hidden"></section>
+
+        <section class="card" data-mode="to-epub">
+            <h2>章节预览</h2>
+            <div id="previewSummary" class="hint">尚未预览。</div>
+            <ol id="chapterList" class="chapter-list"></ol>
+        </section>
+
+        <section class="card" data-mode="to-txt">
+            <h2>文本预览</h2>
+            <div id="textSummary" class="hint">尚未预览。</div>
+            <pre id="textPreview" class="text-preview">—</pre>
+        </section>
+
+        <section class="card">
+            <h2>生成结果</h2>
+            <div id="downloadArea"></div>
+            <pre id="logs" class="logs">暂无日志。</pre>
+        </section>
+    </div>
+    <script src="/txt2epub/web/app.js"></script>
+</body>
+</html>

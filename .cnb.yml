@@ -1,0 +1,59 @@
+# ============================================================
+# Hackathon 作品模板流水线
+#
+#   include         从中心 CI 仓库引入作品自动化检查流水线 ($.pull_request)
+#                   检查逻辑集中在中心仓库维护 统一升级 学员无需也不应改写检查本身
+#   $.vscode        云原生开发环境  Fork 后点右上角 云原生开发 秒级拉起
+#   main.push       推送到 main 时自动构建并推送镜像到 CNB 制品库 供仅预览模式使用
+#
+# 注 你可以自由编辑本文件 (开预览 / 改端口 / 定制构建) 只要保留上面的 include 即可
+#    若要开启 Fork 即玩 的仅预览按钮 见 README 进阶 需把 $.vscode 段替换为
+#    onlyPreview 配置 建议新建 dev 分支保留开发用配置 主分支专用于对外展示
+# ============================================================
+
+# ---- 作品自动化检查流水线 从 CI 仓库引入 ----
+include:
+  - https://cnb.cool/whut1/ai-engineering-exercise-ci/-/blob/main/hackathon.yml
+
+# 主分支推送时构建并推送业务镜像到 CNB 内置制品库。
+# CNB_DOCKER_REGISTRY 与 CNB_REPO_SLUG_LOWERCASE 是平台内置变量，不需要自己填。
+main:
+  push:
+    - stages:
+        - name: build-and-push
+          script: |
+            docker build -t ${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}:latest .
+            docker push   ${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}:latest
+      services:
+        - docker
+
+# 仅预览模式：点右上角按钮后不进 IDE，直接拉起业务容器并展示预览页。
+# launch / keepAliveTimeout 等是 service 的 options 下的字段（与官方文档、平台 schema 一致）。
+$:
+  vscode:
+    - runner:
+        cpus: 4
+      services:
+        - docker
+        - name: vscode
+          options:
+            onlyPreview: true
+            # 镜像必须写成常量地址。若写成 ${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}，
+            # 别人 Fork 后会解析到他们自己的仓库路径，而那里没有构建过镜像，启动必定失败。
+            # 注意：这个常量必须与本仓库 slug 一一对应（pluto_2026/MyEpubTools → myepubtools）。
+            # 仓库改名或迁移后若不同步改这里，push 流水线会照常构建成功，但容器会一直跑
+            # 改名前的旧镜像，预览页会打不开。
+            # 端口不必传：镜像里已经 ENV EPUB_TOOLS_PORT=8686，而仅预览模式只认 8686。
+            # 刻意保持单行写法：教程里的反斜杠续行在 YAML 里反斜杠是字面量，
+            # 会被原样拼进命令、多出一个 " -e" 参数。
+            launch: docker run -d --network host docker.cnb.cool/pluto_2026/myepubtools:latest
+            keepAliveTimeout: 3600000
+      # 启动前准备步骤（官方文档里 stages 是可选字段）。
+      # 把镜像地址打进日志，便于预览打不开时一眼排除「镜像不对」；
+      # 顺手预热镜像：失败不阻断（下面 docker run 自己还会再拉一次），
+      # 但能避免 docker run 卡在拉取大镜像上。
+      stages:
+        - name: prepare
+          script: |
+            echo "业务镜像：docker.cnb.cool/pluto_2026/myepubtools:latest"
+            docker pull docker.cnb.cool/pluto_2026/myepubtools:latest || true
